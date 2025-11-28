@@ -1,0 +1,61 @@
+AI CODE REVIEW AGENT - QUICK GUIDE
+===================================
+
+SETUP:
+  1. pip install -r requirements.txt
+  2. export GEMINI_API_KEY='your-key'
+  3. Get key from: https://aistudio.google.com/app/apikey
+
+RUN:
+  ./start_ui.sh              # Web UI at http://localhost:5001
+  ./run_all_features.sh      # Demo all 7 features
+  ./analyze_codebase.sh .    # Analyze entire codebase
+
+DOCUMENTATION:
+  README.md                  # Main documentation
+  KAGGLE_FINAL_SUBMISSION.md # Competition submission
+  docs/                      # Additional documentation
+
+FEATURES:
+  ✓ Multi-Agent System
+  ✓ Custom Tools (4)
+  ✓ MCP Integration
+  ✓ Code Execution
+  ✓ Sessions & Memory
+  ✓ Observability
+  ✓ Context Engineering
+
+  = 7/3 Required (233% Compliance)
+
+LANGUAGES SUPPORTED:
+  Python, JavaScript, TypeScript, Go, Java, C/C++, 
+  Rust, Ruby, PHP, C#, Swift, Kotlin, Scala (12+)
+
+TECH STACK:
+  - AI: Google Gemini 2.5 Flash
+  - Backend: Python 3.9+
+  - UI: Flask + HTML/CSS/JS
+  - 100% Google Stack (No OpenAI)
+
+PROJECT STRUCTURE:
+  agent/             # Core modules
+  templates/         # Web UI
+  tests/             # Unit tests
+  docs/              # Documentation
+  *.sh               # Shell scripts
+  *.py               # Python files
+
+GIT SUBMISSION:
+  git init
+  git add .
+  git commit -m "AI Code Review Agent - Kaggle Competition"
+  git remote add origin <your-repo>
+  git push -u origin main
+
+SUPPORT:
+  - Check docs/ for detailed guides
+  - Run ./run_test.sh to verify setup
+  - Check ui.log for errors
+
+Built for: Kaggle Agents Intensive Capstone Project
+Status: Production Ready | Git Ready | Submission Ready

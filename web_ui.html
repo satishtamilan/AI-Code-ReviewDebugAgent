@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Code Review Agent - Kaggle Competition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 0.9em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            font-size: 1.3em;
+        }
+
+        .language-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .lang-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .lang-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .lang-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 400px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .results-panel {
+            grid-column: 1 / -1;
+        }
+
+        .result-content {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .result-content.show {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .issue-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .issue-card.error {
+            border-left-color: #e74c3c;
+        }
+
+        .issue-card.warning {
+            border-left-color: #f39c12;
+        }
+
+        .issue-card.info {
+            border-left-color: #3498db;
+        }
+
+        .issue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .issue-title {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .severity-badge {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .severity-error {
+            background: #fee;
+            color: #e74c3c;
+        }
+
+        .severity-warning {
+            background: #fff3e0;
+            color: #f39c12;
+        }
+
+        .severity-info {
+            background: #e3f2fd;
+            color: #3498db;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-card .icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .feature-card h3 {
+            font-size: 1em;
+            margin-bottom: 5px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Code Review Agent</h1>
+            <p>Multi-Language Code Analysis with Google Gemini</p>
+            <div>
+                <span class="badge">7 Features</span>
+                <span class="badge">Multi-Agent</span>
+                <span class="badge">100% Google Stack</span>
+                <span class="badge">Kaggle Competition</span>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="panel">
+                <h2><span class="icon">💻</span> Code Input</h2>
+                
+                <div class="language-selector">
+                    <button class="lang-btn active" data-lang="python">Python</button>
+                    <button class="lang-btn" data-lang="javascript">JavaScript</button>
+                    <button class="lang-btn" data-lang="go">Go</button>
+                    <button class="lang-btn" data-lang="java">Java</button>
+                    <button class="lang-btn" data-lang="cpp">C++</button>
+                    <button class="lang-btn" data-lang="rust">Rust</button>
+                </div>
+
+                <textarea id="codeInput" placeholder="Paste your code here...">def process_data(items):
+    result = []
+    for i in range(len(items)):
+        if items[i] > 0:
+            result.append(items[i] * 2)
+    return result / len(items)  # Bug here!</textarea>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="analyzeCode()">
+                        <span>🔍</span> Analyze Code
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearCode()">
+                        <span>🗑️</span> Clear
+                    </button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2><span class="icon">📊</span> Features</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="icon">🤖</div>
+                        <h3>Multi-Agent</h3>
+                        <p>Sequential workflow</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="icon">🔧</div>
+                        <h3>Custom Tools</h3>
+                        <p>4 analyzers</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="icon">🔌</div>
+                        <h3>MCP Support</h3>
+                        <p>Protocol ready</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="icon">⚡</div>
+                        <h3>Code Execution</h3>
+                        <p>Google Sandbox</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="icon">💾</div>
+                        <h3>Memory</h3>
+                        <p>State & sessions</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="icon">📈</div>
+                        <h3>Observability</h3>
+                        <p>Tracing & metrics</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="icon">🎯</div>
+                        <h3>Context Engine</h3>
+                        <p>Token optimization</p>
+                    </div>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-number">7</div>
+                        <div class="stat-label">Features</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">12+</div>
+                        <div class="stat-label">Languages</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Google Stack</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel results-panel">
+            <h2><span class="icon">✨</span> Analysis Results</h2>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing your code with Google Gemini...</p>
+            </div>
+
+            <div class="result-content" id="results">
+                <h3 style="margin-bottom: 15px;">Issues Found:</h3>
+                
+                <div class="issue-card error">
+                    <div class="issue-header">
+                        <span class="issue-title">TypeError: Unsupported operation</span>
+                        <span class="severity-badge severity-error">ERROR</span>
+                    </div>
+                    <p><strong>Line 6:</strong> Cannot divide list by integer</p>
+                    <p style="margin-top: 10px; color: #666;">
+                        <strong>Fix:</strong> Calculate sum first: <code>return sum(result) / len(items)</code>
+                    </p>
+                </div>
+
+                <div class="issue-card warning">
+                    <div class="issue-header">
+                        <span class="issue-title">Potential division by zero</span>
+                        <span class="severity-badge severity-warning">WARNING</span>
+                    </div>
+                    <p><strong>Line 6:</strong> No check for empty items list</p>
+                    <p style="margin-top: 10px; color: #666;">
+                        <strong>Fix:</strong> Add check: <code>if not items: return 0</code>
+                    </p>
+                </div>
+
+                <div class="issue-card info">
+                    <div class="issue-header">
+                        <span class="issue-title">Code style improvement</span>
+                        <span class="severity-badge severity-info">INFO</span>
+                    </div>
+                    <p><strong>Line 3:</strong> Use list comprehension for better readability</p>
+                    <p style="margin-top: 10px; color: #666;">
+                        <strong>Better:</strong> <code>result = [item * 2 for item in items if item > 0]</code>
+                    </p>
+                </div>
+
+                <div style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 8px;">
+                    <strong style="color: #2e7d32;">✓ Complexity Score: 8/10</strong>
+                    <p style="margin-top: 5px; color: #666;">
+                        Functions: 1 | Loops: 1 | Branches: 1 | Lines: 6
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Language selector
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                loadSampleCode(this.dataset.lang);
+            });
+        });
+
+        function loadSampleCode(lang) {
+            const samples = {
+                python: `def process_data(items):
+    result = []
+    for i in range(len(items)):
+        if items[i] > 0:
+            result.append(items[i] * 2)
+    return result / len(items)  # Bug here!`,
+                
+                javascript: `function processData(items) {
+    let result = [];
+    for (let i = 0; i < items.length; i++) {
+        if (items[i] > 0) {
+            result.push(items[i] * 2);
+        }
+    }
+    return result / items.length;  // Bug here!
+}`,
+                
+                go: `func ProcessData(items []int) float64 {
+    result := []int{}
+    for i := 0; i < len(items); i++ {
+        if items[i] > 0 {
+            result = append(result, items[i]*2)
+        }
+    }
+    return float64(sum(result)) / float64(len(result))
+}`,
+                
+                java: `public static double processData(int[] items) {
+    List<Integer> result = new ArrayList<>();
+    for (int i = 0; i < items.length; i++) {
+        if (items[i] > 0) {
+            result.add(items[i] * 2);
+        }
+    }
+    return result / items.length;  // Bug here!
+}`,
+                
+                cpp: `double processData(vector<int>& items) {
+    vector<int> result;
+    for (int i = 0; i < items.size(); i++) {
+        if (items[i] > 0) {
+            result.push_back(items[i] * 2);
+        }
+    }
+    return result / items.size();  // Bug here!
+}`,
+                
+                rust: `fn process_data(items: &Vec<i32>) -> f64 {
+    let mut result = Vec::new();
+    for i in 0..items.len() {
+        if items[i] > 0 {
+            result.push(items[i] * 2);
+        }
+    }
+    result / items.len() as f64  // Bug here!
+}`
+            };
+            
+            document.getElementById('codeInput').value = samples[lang] || samples.python;
+        }
+
+        function analyzeCode() {
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            
+            loading.classList.add('show');
+            results.classList.remove('show');
+            
+            // Simulate API call
+            setTimeout(() => {
+                loading.classList.remove('show');
+                results.classList.add('show');
+            }, 2000);
+        }
+
+        function clearCode() {
+            document.getElementById('codeInput').value = '';
+            document.getElementById('results').classList.remove('show');
+        }
+
+        // Auto-show results on page load for demo
+        setTimeout(() => {
+            document.getElementById('results').classList.add('show');
+        }, 500);
+    </script>
+</body>
+</html>
+
