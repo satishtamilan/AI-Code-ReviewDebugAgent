@@ -366,9 +366,35 @@
             result.append(items[i] * 2)
     return result / len(items)  # Bug: Can't divide list by int</textarea>
 
-                    <button class="btn btn-primary" id="analyzeBtn">
-                        <span>🔍</span> Analyze Code
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" id="analyzeBtn" style="flex: 1;">
+                            <span>🔍</span> Analyze Code
+                        </button>
+                        <button class="btn btn-primary" id="analyzeProjectBtn" style="flex: 1; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <span>📁</span> Analyze Project
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="panel" style="margin-top: 20px;">
+                    <h2>📦 Codebase Analysis</h2>
+                    <p style="margin-bottom: 15px; color: #666;">Enter the path to your project directory to analyze the entire codebase.</p>
+                    
+                    <input type="text" id="projectPath" placeholder="/path/to/your/project or ." 
+                           style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; margin-bottom: 15px;">
+                    
+                    <button class="btn btn-primary" id="analyzeProjectPathBtn" style="width: 100%;">
+                        <span>🚀</span> Analyze Entire Codebase
                     </button>
+                    
+                    <div id="projectProgress" style="display: none; margin-top: 15px;">
+                        <div style="background: #f0f0f0; border-radius: 10px; overflow: hidden; height: 30px;">
+                            <div id="progressBar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100%; width: 0%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                0%
+                            </div>
+                        </div>
+                        <p id="progressText" style="margin-top: 10px; text-align: center; color: #666;">Scanning files...</p>
+                    </div>
                 </div>
 
                 <div class="panel results-section" id="results">
@@ -647,6 +673,166 @@
         // Update stats on page load and every 5 seconds
         updateStats();
         setInterval(updateStats, 5000);
+
+        // Analyze entire project button
+        document.getElementById('analyzeProjectBtn').addEventListener('click', async function() {
+            const btn = this;
+            
+            if (!confirm('This will analyze all code files in the current directory. This may take a few minutes. Continue?')) {
+                return;
+            }
+            
+            btn.disabled = true;
+            document.getElementById('results').classList.add('show');
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('resultsContent').innerHTML = '';
+            document.getElementById('loadingTime').textContent = 'Analyzing entire codebase... Please wait';
+
+            try {
+                const response = await fetch('/api/analyze-codebase', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        directory: '.'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    displayCodebaseResults(result);
+                    updateStats();
+                } else {
+                    document.getElementById('resultsContent').innerHTML = `
+                        <div class="issue-card error">
+                            <div class="issue-title">Error: ${result.error || 'Unknown error'}</div>
+                            <p>Try using command line: ./analyze_codebase.sh agent/</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('resultsContent').innerHTML = `
+                    <div class="issue-card error">
+                        <div class="issue-title">Error: ${error.message}</div>
+                        <p>The codebase analysis feature works best via command line:</p>
+                        <pre style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin-top: 10px;">./analyze_codebase.sh agent/</pre>
+                    </div>
+                `;
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+                btn.disabled = false;
+            }
+        });
+
+        function displayCodebaseResults(result) {
+            let html = '<h3 style="color: #667eea; margin-bottom: 20px;">📦 Codebase Analysis Complete!</h3>';
+            
+            html += `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h3 style="color: white; margin-bottom: 15px;">Overview</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; font-size: 0.95em;">
+                        <div>
+                            <strong>📁 Directory:</strong> ${result.directory}<br>
+                            <strong>📄 Files Analyzed:</strong> ${result.analyzed_files} / ${result.total_files}<br>
+                            <strong>📝 Total Lines:</strong> ${result.total_lines.toLocaleString()}
+                        </div>
+                        <div>
+                            <strong>🐛 Total Issues:</strong> ${result.total_issues}<br>
+                            <strong>⭐ Average Score:</strong> ${result.average_score}/100<br>
+                            <strong>💾 Session:</strong> ${result.session_id.substring(0, 16)}...
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Severity breakdown
+            html += '<h4 style="color: #667eea; margin-bottom: 10px;">Severity Breakdown</h4>';
+            html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">';
+            html += `<div class="issue-card error" style="text-align: center; padding: 20px;">
+                        <div style="font-size: 2.5em; font-weight: bold;">${result.severity_breakdown.high || 0}</div>
+                        <div>High Severity</div>
+                     </div>`;
+            html += `<div class="issue-card warning" style="text-align: center; padding: 20px;">
+                        <div style="font-size: 2.5em; font-weight: bold;">${result.severity_breakdown.medium || 0}</div>
+                        <div>Medium Severity</div>
+                     </div>`;
+            html += `<div class="issue-card info" style="text-align: center; padding: 20px;">
+                        <div style="font-size: 2.5em; font-weight: bold;">${result.severity_breakdown.low || 0}</div>
+                        <div>Low Severity</div>
+                     </div>`;
+            html += '</div>';
+
+            // Issue types
+            html += '<h4 style="color: #667eea; margin-bottom: 10px;">Issue Types</h4>';
+            html += '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">';
+            html += `<div class="metric-item" style="text-align: center; padding: 15px;">
+                        <div style="font-size: 2em; color: #667eea; font-weight: bold;">${result.issue_types.bug || 0}</div>
+                        <div>Bugs</div>
+                     </div>`;
+            html += `<div class="metric-item" style="text-align: center; padding: 15px;">
+                        <div style="font-size: 2em; color: #667eea; font-weight: bold;">${result.issue_types.security || 0}</div>
+                        <div>Security</div>
+                     </div>`;
+            html += `<div class="metric-item" style="text-align: center; padding: 15px;">
+                        <div style="font-size: 2em; color: #667eea; font-weight: bold;">${result.issue_types.quality || 0}</div>
+                        <div>Quality</div>
+                     </div>`;
+            html += '</div>';
+
+            // Languages
+            html += '<h4 style="color: #667eea; margin-bottom: 10px;">Languages Found</h4>';
+            html += '<div style="margin-bottom: 20px;">';
+            for (const [lang, count] of Object.entries(result.languages)) {
+                html += `<span style="display: inline-block; background: #667eea; color: white; padding: 8px 15px; border-radius: 20px; margin: 5px; font-size: 0.9em;">${lang}: ${count} files</span>`;
+            }
+            html += '</div>';
+
+            // Top files with issues
+            if (result.file_results && result.file_results.length > 0) {
+                html += '<h4 style="color: #667eea; margin-bottom: 10px;">Top Files with Issues</h4>';
+                const filesWithIssues = result.file_results
+                    .filter(f => f.issues && f.issues.length > 0)
+                    .sort((a, b) => b.issues.length - a.issues.length)
+                    .slice(0, 5);
+
+                filesWithIssues.forEach(file => {
+                    html += `
+                        <div class="issue-card" style="margin-bottom: 15px;">
+                            <div class="issue-header">
+                                <span class="issue-title">📄 ${file.file}</span>
+                                <span class="severity-badge severity-info">Score: ${file.score}/100</span>
+                            </div>
+                            <p style="margin-top: 10px;"><strong>${file.issues.length} issues found</strong></p>
+                            <ul style="margin-top: 10px; padding-left: 20px; max-height: 150px; overflow-y: auto;">
+                    `;
+                    
+                    file.issues.slice(0, 3).forEach(issue => {
+                        const severity = issue.severity || 'unknown';
+                        const desc = issue.description ? issue.description.substring(0, 100) : 'No description';
+                        html += `<li style="margin-bottom: 5px;"><strong>[${severity.toUpperCase()}]</strong> ${desc}...</li>`;
+                    });
+                    
+                    if (file.issues.length > 3) {
+                        html += `<li style="color: #666;"><em>... and ${file.issues.length - 3} more issues</em></li>`;
+                    }
+                    
+                    html += `</ul></div>`;
+                });
+            }
+
+            html += `
+                <div class="summary-box" style="margin-top: 20px; background: #e8f5e9; padding: 20px; border-radius: 10px;">
+                    <h4 style="color: #2e7d32; margin-bottom: 10px;">✅ Analysis Complete!</h4>
+                    <p><strong>Full Report:</strong> <code>codebase_report_${result.session_id}.md</code></p>
+                    <p><strong>Traces:</strong> <code>.codebase_traces/codebase_${result.session_id}.json</code></p>
+                    <p style="margin-top: 10px; color: #666;">Check your project directory for the complete detailed report</p>
+                </div>
+            `;
+
+            document.getElementById('resultsContent').innerHTML = html;
+        }
     </script>
 </body>
 </html>
