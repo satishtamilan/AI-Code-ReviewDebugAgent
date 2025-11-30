@@ -4,6 +4,458 @@
 
 ---
 
+---
+
+## Architecture Diagrams
+
+### System Architecture Overview
+
+```mermaid
+graph TB
+    subgraph "User Interface Layer"
+        UI[Web UI - Flask/HTML]
+        CLI[Command Line Interface]
+        API[REST API]
+    end
+    
+    subgraph "Multi-Agent Core"
+        ORCH[Orchestrator]
+        REV[Review Agent]
+        DEBUG[Debug Agent]
+        FIX[Fix Agent]
+    end
+    
+    subgraph "Custom Tools - Feature 2"
+        SYNTAX[Syntax Checker]
+        SECURITY[Security Scanner]
+        COMPLEX[Complexity Analyzer]
+        PYLINT[Pylint Integration]
+    end
+    
+    subgraph "Advanced Features"
+        SESSION[Sessions & Memory - Feature 5]
+        OBS[Observability - Feature 6]
+        CTX[Context Engineering - Feature 7]
+        MCP[MCP Integration - Feature 3]
+        GCODE[Google Code Execution - Feature 4]
+    end
+    
+    UI --> ORCH
+    CLI --> ORCH
+    API --> ORCH
+    
+    ORCH --> REV
+    ORCH --> DEBUG
+    ORCH --> FIX
+    
+    REV --> SYNTAX
+    REV --> SECURITY
+    REV --> COMPLEX
+    REV --> PYLINT
+    
+    ORCH --> SESSION
+    ORCH --> OBS
+    ORCH --> CTX
+    ORCH --> MCP
+    DEBUG --> GCODE
+    
+    REV -.->|AI Analysis| GEMINI[Google Gemini 2.5 Flash]
+    DEBUG -.->|AI Analysis| GEMINI
+    FIX -.->|AI Analysis| GEMINI
+    
+    SESSION -.-> STORAGE[(JSON Storage)]
+    OBS -.-> STORAGE
+    
+    style GEMINI fill:#4285F4,color:#fff
+    style SYNTAX fill:#90EE90
+    style SECURITY fill:#90EE90
+    style COMPLEX fill:#90EE90
+    style PYLINT fill:#90EE90
+    style SESSION fill:#FFD700
+    style OBS fill:#FFD700
+    style CTX fill:#FFD700
+    style MCP fill:#FFD700
+    style GCODE fill:#FFD700
+```
+
+### Multi-Agent Workflow Sequence
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI as Web UI
+    participant Orch as Multi-Agent Orchestrator
+    participant Rev as Review Agent
+    participant Debug as Debug Agent
+    participant Fix as Fix Agent
+    participant Gemini as Google Gemini 2.5 Flash
+    participant Session as Session Manager
+    participant Memory as Memory Bank
+    participant Obs as Observability Tracer
+    
+    User->>UI: Submit Code for Analysis
+    UI->>Orch: Start Analysis Request
+    
+    activate Orch
+    Orch->>Session: Create New Session
+    Orch->>Obs: Start Trace Span
+    
+    Note over Orch: Sequential Multi-Agent Workflow
+    
+    Orch->>Rev: Step 1: Code Review
+    activate Rev
+    Rev->>Gemini: Analyze Code Quality
+    Gemini-->>Rev: Issues & Suggestions
+    Rev->>Memory: Store Common Patterns
+    Rev-->>Orch: Review Results
+    deactivate Rev
+    
+    Orch->>Debug: Step 2: Debug Analysis
+    activate Debug
+    Debug->>Gemini: Find Root Causes
+    Gemini-->>Debug: Debug Information
+    Debug-->>Orch: Debug Results
+    deactivate Debug
+    
+    Orch->>Fix: Step 3: Generate Fixes
+    activate Fix
+    Fix->>Gemini: Generate Solutions
+    Gemini-->>Fix: Fixed Code
+    Fix-->>Orch: Fix Results
+    deactivate Fix
+    
+    Orch->>Session: Save All Interactions
+    Orch->>Obs: End Trace & Record Metrics
+    Orch-->>UI: Complete Analysis Report
+    deactivate Orch
+    
+    UI-->>User: Display Results
+```
+
+### Data Flow - Single File Analysis
+
+```mermaid
+flowchart TD
+    A[User Submits Code] --> B[Language Detection]
+    B --> C{Supported Language?}
+    C -->|No| D[Error: Unsupported]
+    C -->|Yes| E[Create Session]
+    
+    E --> F[Start Observability Trace]
+    
+    F --> G[Custom Tools Analysis]
+    G --> G1[Syntax Check]
+    G --> G2[Security Scan]
+    G --> G3[Complexity Analysis]
+    G --> G4[Pylint Analysis]
+    
+    G1 --> H[Aggregate Tool Results]
+    G2 --> H
+    G3 --> H
+    G4 --> H
+    
+    H --> I[Context Engineering]
+    I --> J[Token Optimization]
+    J --> K[Call Gemini AI]
+    
+    K --> L[Parse AI Response]
+    L --> M[Store in Memory Bank]
+    M --> N[Update Session State]
+    N --> O[End Trace & Collect Metrics]
+    O --> P[Generate Report]
+    
+    P --> Q[Display to User]
+    
+    style K fill:#4285F4,color:#fff
+    style G1 fill:#90EE90
+    style G2 fill:#90EE90
+    style G3 fill:#90EE90
+    style G4 fill:#90EE90
+    style M fill:#FFD700
+    style O fill:#FFD700
+```
+
+### Data Flow - Codebase Analysis
+
+```mermaid
+flowchart LR
+    A[Directory Path] --> B[Scan Directory]
+    B --> C[Filter by Extension]
+    C --> D[File List]
+    
+    D --> E{For Each File}
+    
+    E --> F1[File 1]
+    E --> F2[File 2]
+    E --> F3[File N]
+    
+    F1 --> G1[Detect Language]
+    F2 --> G2[Detect Language]
+    F3 --> G3[Detect Language]
+    
+    G1 --> H1[Multi-Agent Analysis]
+    G2 --> H2[Multi-Agent Analysis]
+    G3 --> H3[Multi-Agent Analysis]
+    
+    H1 --> I1[Gemini AI]
+    H2 --> I2[Gemini AI]
+    H3 --> I3[Gemini AI]
+    
+    I1 --> J[Aggregate Results]
+    I2 --> J
+    I3 --> J
+    
+    J --> K[Calculate Statistics]
+    K --> L[Severity Breakdown]
+    K --> M[Issue Types]
+    K --> N[Language Stats]
+    
+    L --> O[Generate Report]
+    M --> O
+    N --> O
+    
+    O --> P[Markdown File]
+    O --> Q[JSON Traces]
+    O --> R[Memory Bank]
+    
+    style I1 fill:#4285F4,color:#fff
+    style I2 fill:#4285F4,color:#fff
+    style I3 fill:#4285F4,color:#fff
+```
+
+### Component Architecture
+
+```mermaid
+graph TB
+    subgraph "Presentation Layer"
+        WEB[Web UI<br/>templates/index.html]
+        SHELL[Shell Scripts<br/>.sh files]
+    end
+    
+    subgraph "Business Logic - Agent System"
+        MULTI[Multi-Agent Orchestrator<br/>multi_agent_orchestrator.py]
+        REVIEW[Code Review Agent<br/>code_reviewer.py]
+        DEBUGGER[Debug Agent<br/>debugger.py]
+        GEMINI_INT[Gemini Integration<br/>gemini_integration.py]
+    end
+    
+    subgraph "Tools & Utilities"
+        TOOLS[Custom Tools<br/>tools.py - 4 Analyzers]
+        MCP_CLIENT[MCP Client<br/>mcp_client.py]
+        UTILS[Utilities<br/>utils.py]
+    end
+    
+    subgraph "State & Memory"
+        SESS[Session Manager<br/>session_manager.py]
+        MEM[Memory Bank<br/>Long-term Learning]
+        CTX[Context Engineering<br/>context_engineering.py]
+    end
+    
+    subgraph "Observability"
+        OBS[Observability<br/>observability.py]
+        TRACER[Agent Tracer<br/>Distributed Tracing]
+        METER[Metrics Collector<br/>Performance Metrics]
+    end
+    
+    subgraph "Data Storage"
+        JSON_SESS[.live_sessions/<br/>*.json]
+        JSON_MEM[.live_memory/<br/>memories.json]
+        JSON_TRACE[.live_traces/<br/>*.json]
+        REPORTS[Reports<br/>*.md files]
+    end
+    
+    WEB --> MULTI
+    SHELL --> MULTI
+    
+    MULTI --> REVIEW
+    MULTI --> DEBUGGER
+    REVIEW --> GEMINI_INT
+    DEBUGGER --> GEMINI_INT
+    
+    MULTI --> TOOLS
+    MULTI --> MCP_CLIENT
+    
+    MULTI --> SESS
+    MULTI --> CTX
+    SESS --> MEM
+    
+    MULTI --> OBS
+    OBS --> TRACER
+    OBS --> METER
+    
+    SESS --> JSON_SESS
+    MEM --> JSON_MEM
+    TRACER --> JSON_TRACE
+    MULTI --> REPORTS
+    
+    GEMINI_INT -.->|API Calls| GEMINI_API[Google Gemini 2.5 Flash API]
+    
+    style GEMINI_API fill:#4285F4,color:#fff
+    style TOOLS fill:#90EE90
+    style MCP_CLIENT fill:#90EE90
+    style SESS fill:#FFD700
+    style MEM fill:#FFD700
+    style CTX fill:#FFD700
+    style OBS fill:#FFD700
+    style TRACER fill:#FFD700
+    style METER fill:#FFD700
+```
+
+### Session & Memory Management Flow
+
+```mermaid
+stateDiagram-v2
+    [*] --> SessionCreated: User Request
+    
+    SessionCreated --> AnalysisInProgress: Start Multi-Agent
+    
+    state AnalysisInProgress {
+        [*] --> ReviewAgent
+        ReviewAgent --> DebugAgent
+        DebugAgent --> FixAgent
+        FixAgent --> [*]
+    }
+    
+    AnalysisInProgress --> StoreInteraction: Save Each Step
+    StoreInteraction --> UpdateContext: Update Session State
+    
+    UpdateContext --> CheckPatterns: Analyze Results
+    
+    state CheckPatterns {
+        [*] --> AnalyzeIssues
+        AnalyzeIssues --> CommonBug: Pattern Found
+        AnalyzeIssues --> CodePattern: Pattern Found
+        AnalyzeIssues --> FixStrategy: Pattern Found
+        AnalyzeIssues --> NoPattern: No Match
+        CommonBug --> [*]
+        CodePattern --> [*]
+        FixStrategy --> [*]
+        NoPattern --> [*]
+    }
+    
+    CheckPatterns --> StoreMemory: Store in Memory Bank
+    CheckPatterns --> SessionComplete: No New Patterns
+    
+    StoreMemory --> SessionComplete
+    SessionComplete --> PersistSession: Save to JSON
+    PersistSession --> [*]
+    
+    note right of StoreMemory
+        Memory Bank Categories:
+        - Common Bugs
+        - Code Patterns
+        - Fix Strategies
+        - Review Insights
+    end note
+```
+
+### Observability & Tracing Flow
+
+```mermaid
+flowchart TB
+    A[Operation Start] --> B[Create Trace Span]
+    B --> C[Add Span Attributes]
+    
+    C --> D{Operation Type}
+    D -->|Analysis| E[Code Analysis Span]
+    D -->|Tool| F[Tool Execution Span]
+    D -->|AI Call| G[Gemini API Span]
+    
+    E --> H[Record Events]
+    F --> H
+    G --> H
+    
+    H --> I[Event 1: Start]
+    H --> J[Event 2: Processing]
+    H --> K[Event 3: Complete]
+    
+    I --> L[Collect Metrics]
+    J --> L
+    K --> L
+    
+    L --> M[Counter: Increment]
+    L --> N[Timing: Duration]
+    L --> O[Value: Score/Quality]
+    
+    M --> P[End Span]
+    N --> P
+    O --> P
+    
+    P --> Q[Calculate Statistics]
+    Q --> R[Export Traces to JSON]
+    Q --> S[Export Metrics to JSON]
+    
+    R --> T[.live_traces/traces_*.json]
+    S --> U[Metrics Summary]
+    
+    T --> V[Analysis & Visualization]
+    U --> V
+    
+    style B fill:#FFD700
+    style H fill:#FFD700
+    style L fill:#FFD700
+    style G fill:#4285F4,color:#fff
+```
+
+### Technology Stack
+
+```mermaid
+mindmap
+  root((AI Code Review<br/>Agent))
+    Frontend
+      HTML5 & CSS3
+      JavaScript ES6+
+      Flask Templates
+      Fetch API
+      Responsive Design
+    Backend
+      Python 3.9+
+      Flask Framework
+      Flask-CORS
+      Gunicorn
+    AI & Analysis
+      Google Gemini 2.5 Flash
+      google-generativeai SDK
+      Natural Language Processing
+      Code Understanding
+    Custom Tools
+      AST Parser
+      Pylint Integration
+      Security Scanner
+      Complexity Analyzer
+      Syntax Checker
+    Data & Storage
+      JSON Files
+      File System
+      Session Storage
+      Memory Bank
+    Observability
+      Custom Tracer
+      Metrics Collector
+      Event Logging
+      Performance Monitoring
+    Protocols
+      MCP Model Context Protocol
+      REST API
+      HTTP/HTTPS
+      WebSocket Ready
+    Deployment
+      Google Cloud Run
+      Docker Containers
+      Environment Variables
+      Secret Management
+    Languages Supported
+      Python
+      JavaScript/TypeScript
+      Go
+      Java
+      C/C++
+      Rust
+      12+ Languages
+```
+
+---
+
 ## Problem Statement
 
 ### The Problem I'm Solving
