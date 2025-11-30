@@ -244,6 +244,136 @@ kaggle-genai/
 
 ---
 
+## Architecture
+
+### System Overview
+
+```mermaid
+graph TB
+    subgraph "User Interface"
+        UI[Web UI - Flask]
+        CLI[Command Line]
+    end
+    
+    subgraph "Agent Core"
+        ORCH[Multi-Agent Orchestrator]
+        REV[Review Agent]
+        DEBUG[Debug Agent]
+        FIX[Fix Agent]
+    end
+    
+    subgraph "Tools"
+        SYNTAX[Syntax Checker]
+        SECURITY[Security Scanner]
+        COMPLEX[Complexity Analyzer]
+        PYLINT[Pylint Tool]
+    end
+    
+    subgraph "Features"
+        SESSION[Sessions & Memory]
+        OBS[Observability]
+        CTX[Context Engineering]
+        MCP[MCP Integration]
+    end
+    
+    UI --> ORCH
+    CLI --> ORCH
+    ORCH --> REV
+    ORCH --> DEBUG
+    ORCH --> FIX
+    REV --> SYNTAX
+    REV --> SECURITY
+    REV --> COMPLEX
+    REV --> PYLINT
+    ORCH --> SESSION
+    ORCH --> OBS
+    ORCH --> CTX
+    ORCH --> MCP
+    
+    REV -.->|API| GEMINI[Google Gemini 2.5 Flash]
+    DEBUG -.->|API| GEMINI
+    FIX -.->|API| GEMINI
+    
+    style GEMINI fill:#4285F4,color:#fff
+```
+
+### Multi-Agent Workflow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI
+    participant Orchestrator
+    participant ReviewAgent
+    participant DebugAgent
+    participant Gemini
+    
+    User->>UI: Submit Code
+    UI->>Orchestrator: Analyze Request
+    Orchestrator->>ReviewAgent: Review Code
+    ReviewAgent->>Gemini: AI Analysis
+    Gemini-->>ReviewAgent: Issues Found
+    ReviewAgent-->>Orchestrator: Results
+    Orchestrator->>DebugAgent: Debug Issues
+    DebugAgent->>Gemini: Root Cause Analysis
+    Gemini-->>DebugAgent: Fixes
+    DebugAgent-->>Orchestrator: Solutions
+    Orchestrator-->>UI: Complete Report
+    UI-->>User: Display Results
+```
+
+### Data Flow
+
+```mermaid
+flowchart LR
+    A[Code Input] --> B[Language Detection]
+    B --> C[Multi-Agent Analysis]
+    C --> D[Tool Execution]
+    D --> E[Gemini AI Review]
+    E --> F[Results Aggregation]
+    F --> G[Session Storage]
+    F --> H[Memory Bank]
+    F --> I[Observability]
+    G --> J[Report Generation]
+    H --> J
+    I --> J
+    J --> K[User Output]
+    
+    style E fill:#4285F4,color:#fff
+```
+
+---
+
+## Tech Stack
+
+```mermaid
+mindmap
+  root((AI Agent))
+    Frontend
+      HTML/CSS/JS
+      Flask
+    Backend
+      Python 3.9+
+      Flask
+    AI
+      Google Gemini 2.5
+      google-generativeai
+    Tools
+      Pylint
+      AST Parser
+      Security Scanner
+    Storage
+      JSON
+      Markdown
+    Features
+      Multi-Agent
+      MCP
+      Sessions
+      Observability
+```
+
+---
+
 ## Configuration
 
 ### Environment Variables
