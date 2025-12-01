@@ -33,7 +33,7 @@ cd /Users/sanandhan/code/kaggle-genai
 source venv/bin/activate
 
 # 3. Set API key
-export GEMINI_API_KEY='AIzaSyDv8Robk1QGQJZEtHBLO_QEgS0H8MJ4xbA'
+export GEMINI_API_KEY='your-api-key-here'
 
 # 4. Run test
 python test_gemini_only.py

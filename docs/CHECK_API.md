@@ -113,7 +113,7 @@ When diagnostic runs successfully:
 🔍 GEMINI API DIAGNOSTICS
 
 ✅ API Key found
-   Key: AIzaSyBCD1234...
+   Key: AIzaSy... (example format)
    Length: 39 characters
 
 ✅ API configured successfully

@@ -123,7 +123,7 @@ It only runs:
 ### **Option 2: Run Enhanced Example Directly**
 ```bash
 source venv/bin/activate
-export GEMINI_API_KEY='AIzaSyDv8Robk1QGQJZEtHBLO_QEgS0H8MJ4xbA'
+export GEMINI_API_KEY='your-api-key-here'
 python enhanced_example.py
 ```
 

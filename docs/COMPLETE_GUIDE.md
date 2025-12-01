@@ -22,7 +22,7 @@ Created a stunning web interface with:
 ```bash
 cd /Users/sanandhan/code/kaggle-genai
 source venv/bin/activate
-export GEMINI_API_KEY='AIzaSyDv8Robk1QGQJZEtHBLO_QEgS0H8MJ4xbA'
+export GEMINI_API_KEY='your-api-key-here'
 python test_go_code.py
 ```
 
